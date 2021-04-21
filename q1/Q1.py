@@ -6,7 +6,9 @@
 ''' graph is a list of [from,edge-char,to] '''
 
 global_counter = 0
-
+import string
+import sys
+import json
 
 ''' class to denote nfa '''
 class nfa :
@@ -49,8 +51,8 @@ def shunting_yard(infix):
     output = ""
     
     for ex in infix:
-        print(infix)
-        print(ex)
+        #print(infix)
+        #print(ex)
         if(ex.isalnum()):
             output = output + ex
         elif(ex == '('):
@@ -131,18 +133,18 @@ def construct_empty_nfa():
 
 ''' construct a one symbol nfa,equivalent to rule 2 of thompson '''
 def construct_symbol_nfa(a):
-    print("construct {0}".format(a))
+    #print("construct {0}".format(a))
     global global_counter
     new_nfa = nfa(global_counter,2)
     global_counter += 2
     new_nfa.transition_list.append([new_nfa.start_state,a,new_nfa.final_state])
-    print("CREATED NFA:")
-    print_nfa(new_nfa)
+    #print("CREATED NFA:")
+    #print_nfa(new_nfa)
     return new_nfa
 
 ''' construct a union of 2 nfa ,equivalent to rule 3 of thompson '''
 def union_nfa(nfa1,nfa2):
-    print("union")
+    #print("union")
     global global_counter
     new_nfa = nfa(global_counter,2)
     global_counter += 2
@@ -154,26 +156,27 @@ def union_nfa(nfa1,nfa2):
     new_nfa.transition_list.append([new_nfa.start_state,"$",nfa2.start_state])
     new_nfa.transition_list.append([nfa1.final_state,"$",new_nfa.final_state])
     new_nfa.transition_list.append([nfa2.final_state,"$",new_nfa.final_state])
-    print("CREATED NFA:")
-    print_nfa(new_nfa)
+    #print("CREATED NFA:")
+    #print_nfa(new_nfa)
     return new_nfa
 
 ''' construct a concatenation of 2 nfa,equivalent to rule 4 of thompson '''
 def concatenate_nfa(nfa1,nfa2):
-    print("concatenate")
+    
+    #print("concatenate")
     for z in nfa2.transition_list:
         if(z[0] == nfa2.start_state):
             z[0] = nfa1.final_state
         nfa1.transition_list.append(z)
    
     nfa1.final_state = nfa2.final_state
-    print("CREATED NFA:")
-    print_nfa(nfa1)
+    #print("CREATED NFA:")
+    #print_nfa(nfa1)
     return nfa1
 
 ''' star operation on a nfa,equivalent to rule 5 of thompson '''
 def star_nfa(nfa1):
-    print("star")
+    #print("star")
     global global_counter
     new_nfa = nfa(global_counter,2)
     global_counter += 2
@@ -183,18 +186,18 @@ def star_nfa(nfa1):
     new_nfa.transition_list.append([nfa1.final_state,"$",new_nfa.final_state])
     new_nfa.transition_list.append([nfa1.final_state,"$",nfa1.start_state])
     new_nfa.transition_list.append([new_nfa.start_state,"$",new_nfa.final_state])
-    print("CREATED NFA:")
-    print_nfa(new_nfa)
+    #print("CREATED NFA:")
+    #print_nfa(new_nfa)
     return new_nfa
     
 
 
 ''' create a nfa given a postfix regex '''
 def create_nfa(postfix):
-    print(postfix)
+    #print(postfix)
     stack = []
     for char in postfix:
-        print(char)
+        #print(char)
         if(char.isalnum()):
             stack.append(construct_symbol_nfa(char))
         elif(char == '*'):
@@ -219,13 +222,64 @@ def print_nfa(nfa):
     print("final_state : {0}".format(nfa.final_state))
     for edges in nfa.transition_list:
         print("From : {0} ,to : {1} using : {2}".format(edges[0],edges[2],edges[1]))
+''' function to generate the nfa '''
+def generate_nfa(nfa):
+    final_nfa = {}
+    hash_num = {}
+    temp = []
+    for l in nfa.transition_list:
+        temp.append(l[0])
+        temp.append(l[2])
+    state_index = []
+    for s in temp:
+        if s not in state_index:
+            state_index.append(s)
+    cnt = 0
+    states = []
+    for r in state_index:
+        hash_num[r] = "Q" + str(cnt)
+        cnt += 1
+        states.append(hash_num[r])
+    final_nfa['states'] = states
+    start_state = [hash_num[nfa.start_state]]
+    final_state = [hash_num[nfa.final_state]]
+    letters = list(string.ascii_lowercase)
+    num = []
+    for i in range(10):
+        num.append(str(i))
+    alphabet = letters + num + ["$"]
+    transition = []
+    for i in nfa.transition_list:
+        l1 = hash_num[i[0]]
+        l2 = hash_num[i[2]] 
+        char = i[1]
+        transition.append([l1,char,l2])
+
+    final_nfa['letters'] = alphabet
+    final_nfa['transition_function'] = transition
+    final_nfa['start_states'] = start_state
+    final_nfa['final_state'] = final_state
+    return final_nfa
+    
+        
+
 
 
 ''' function to test create_nfa''' 
-def test_nfa_creation():
-    str = "a(a+b)*b"
-    print_nfa(create_nfa(shunting_yard(format_regular_expression(str))))
+def test_nfa_creation(inp_file,out_file):
+    #str = "a(a+b)*b"
+    f = open(inp_file)
+    regex = json.load(f)
+    f.close()
+    g = open(out_file,"w")
+
+    str = regex['regex']
+    json.dump(generate_nfa(create_nfa(shunting_yard(format_regular_expression(str)))),g,indent=6)
+    g.close()
 
 
 
-test_nfa_creation()                    
+input_path = sys.argv[1]
+output_path = sys.argv[2]
+test_nfa_creation(input_path,output_path)  
+           

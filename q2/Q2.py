@@ -1,11 +1,11 @@
 '''This is python code to transform a NFA to DFA '''
 import json
 global_counter = 0
+import sys
 
 
-
-def load_input():
-    f = open('nfa.json')
+def load_input(infile):
+    f = open(infile)
     nfa = json.load(f)
     f.close()
     '''for (k,v) in dfa.items():
@@ -50,8 +50,8 @@ def test_generation():
     dfa_states = generate_states(nfa['states'])
 
 ''' create a graph to check e closures '''
-def e_closures():
-    nfa = load_input()
+def e_closures(nfa):
+    
     edges = nfa['transition_function']
     states = nfa['states']
     dictionary = {}
@@ -93,8 +93,8 @@ def e_closures():
 
     
 ''' creates a dictionary for help '''
-def graph_creation():
-    nfa = load_input()
+def graph_creation(nfa):
+    
     alphabet = nfa['letters']
     states = nfa['states']
     graph = {}
@@ -111,8 +111,8 @@ def graph_creation():
             
 
 ''' function to create the alphabet of dfa '''
-def letters():
-    nfa = load_input()
+def letters(nfa):
+    
     alphabet = nfa['letters']
     new_alphabet = []
     for al in alphabet:
@@ -126,13 +126,13 @@ def remove_duplicates(list1):
     return res
 
 ''' function to generate transition '''
-def transition():
-    nfa = load_input()
-    dfa_alphabet = letters()
+def transition(nfa):
+    
+    dfa_alphabet = letters(nfa)
     dfa_states = generate_states(nfa['states'])
-    e_closure = e_closures()
+    e_closure = e_closures(nfa)
     transition_list = []
-    graph = graph_creation()
+    graph = graph_creation(nfa)
     
     for state in dfa_states:
         for letter in dfa_alphabet:
@@ -150,13 +150,13 @@ def transition():
     return transition_list
 
 ''' create dfa dictionary'''
-def dfa():
-    nfa = load_input()
+def dfa(infile,outfile):
+    nfa = load_input(infile)
     dfa = {}
-    e_closure = e_closures()
+    e_closure = e_closures(nfa)
     dfa['states'] = generate_states(nfa['states'])
-    dfa['letters'] = letters()
-    dfa['transition_function'] = transition()
+    dfa['letters'] = letters(nfa)
+    dfa['transition_function'] = transition(nfa)
     dfa['start_states'] = e_closure[nfa['start_states'][0]]
     dfa['final_states'] = []
     nfa_final_states = nfa['final_states']
@@ -170,7 +170,10 @@ def dfa():
             if(ans == 1):           
                 dfa['final_states'].append(states) 
     #print(dfa)
-    return dfa
+    g = open(outfile,"w")
+    json.dump(dfa,g,indent = 4)
+    g.close()
+    
 
 ''' function to check correctness '''
 def compare(dfa):
@@ -208,5 +211,7 @@ def print_dfa(dfa):
     for s in dfa['final_states']:
         print(s)
 
-print_dfa(dfa())
-compare(dfa())
+
+infile = sys.argv[1]
+outfile = sys.argv[2]
+dfa(infile,outfile)

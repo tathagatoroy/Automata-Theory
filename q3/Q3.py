@@ -1,5 +1,6 @@
 ''' code to generate regex from dfa ''' 
 import json 
+import sys
 
 ''' function to print dfa optimally '''
 def print_dfa(dfa):
@@ -18,8 +19,8 @@ def print_dfa(dfa):
     for s in dfa['final_states']:
         print(s)
 ''' loads to the dfa from file '''
-def load_input():
-    f = open('dfa2.json')
+def load_input(infile):
+    f = open(infile)
     dfa = json.load(f)
     f.close()
     #print_dfa(dfa)
@@ -34,7 +35,7 @@ def clean(str):
             ans = ans + str[i]
     return ans
 
-def convert(dfa):
+def convert(dfa,outfile):
     #add $ to the alphabet
     dfa['letters'].append('$')
     #add start and accept states
@@ -106,10 +107,12 @@ def convert(dfa):
                     if(graph[chosen_state][r] == "%"):
                         z += 1
                     if(graph[chosen_state][chosen_state] != "$" and graph[chosen_state][chosen_state]!= "%"):
+                        
                         temp += graph[chosen_state][chosen_state] + "*"
                         
                         
                     if(graph[chosen_state][r] != "$" and graph[chosen_state][r] != "%"):
+                        
                         temp += graph[chosen_state][r]
                         
                     if(z > 0):
@@ -144,6 +147,15 @@ def convert(dfa):
         
 
 
-    print(graph["start"]["final"])
+    g = open(outfile,"w")
+    ans = {}
+    ans["regex"] = graph["start"]["final"]
+    json.dump(ans,g,indent=4)
+    g.close()
+    
 
-convert(load_input())
+
+
+infile = sys.argv[1]
+outfile = sys.argv[2]
+convert(load_input(infile),outfile)
