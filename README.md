@@ -52,4 +52,4 @@ The partition the remaining states using the  equivalence class idea from Myhill
 
 #  LINK TO THE VIDEO
 
-https://iiitaphyd-my.sharepoint.com/:v:/g/personal/tathagato_roy_research_iiit_ac_in/ERZ6GV6rzipNlDrJT6mD5RsByLhRSRmW2k7bhtQ9GYHCuQ?e=wpRjDq
+https://iiitaphyd-my.sharepoint.com/:v:/g/personal/tathagato_roy_research_iiit_ac_in/ERZ6GV6rzipNlDrJT6mD5RsByLhRSRmW2k7bhtQ9GYHCuQ?e=HHvWDp
