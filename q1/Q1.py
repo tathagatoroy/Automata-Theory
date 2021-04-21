@@ -200,6 +200,8 @@ def create_nfa(postfix):
         #print(char)
         if(char.isalnum()):
             stack.append(construct_symbol_nfa(char))
+        elif(char == "$"):
+            stack.append(construct_empty_nfa())
         elif(char == '*'):
             nfa1 = stack.pop()
             stack.append(star_nfa(nfa1))
@@ -223,7 +225,7 @@ def print_nfa(nfa):
     for edges in nfa.transition_list:
         print("From : {0} ,to : {1} using : {2}".format(edges[0],edges[2],edges[1]))
 ''' function to generate the nfa '''
-def generate_nfa(nfa):
+def generate_nfa(nfa,alpha):
     final_nfa = {}
     hash_num = {}
     temp = []
@@ -255,10 +257,10 @@ def generate_nfa(nfa):
         char = i[1]
         transition.append([l1,char,l2])
 
-    final_nfa['letters'] = alphabet
+    final_nfa['letters'] = alpha
     final_nfa['transition_function'] = transition
     final_nfa['start_states'] = start_state
-    final_nfa['final_state'] = final_state
+    final_nfa['final_states'] = final_state
     return final_nfa
     
         
@@ -274,7 +276,15 @@ def test_nfa_creation(inp_file,out_file):
     g = open(out_file,"w")
 
     str = regex['regex']
-    json.dump(generate_nfa(create_nfa(shunting_yard(format_regular_expression(str)))),g,indent=6)
+    alphabet = []
+    temp = []
+    for l in str:
+        if(l.isalnum()):
+            temp.append(l)
+    for s in temp:
+        if s not in alphabet:
+            alphabet.append(s)
+    json.dump(generate_nfa(create_nfa(shunting_yard(format_regular_expression(str))),alphabet),g,indent=6)
     g.close()
 
 
